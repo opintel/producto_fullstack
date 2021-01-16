@@ -1,6 +1,5 @@
 import React, { useRef, useEffect } from 'react';
 import * as L from 'leaflet';
-import carto from '@carto/carto.js';
 import 'leaflet/dist/leaflet.css';
 import PropTypes from 'prop-types';
 import { getPoints } from '../Utils/ApiUils';
@@ -19,13 +18,13 @@ function Map (props) {
   let apiKey = '';
   let tableName = '';
   if (process && process.env) {
-    if(process.envREACT_APP_USERNAME) {
+    if(process.env.REACT_APP_USERNAME) {
       username = process.env.REACT_APP_USERNAME;
     }
-    if(process.REACT_APP_API_KEY) {
+    if(process.env.REACT_APP_API_KEY) {
       apiKey = process.env.REACT_APP_API_KEY;
     }
-    if(process.REACT_APP_TABLE_NAME) {
+    if(process.env.REACT_APP_TABLE_NAME) {
       tableName = process.env.REACT_APP_TABLE_NAME;
     }
   }
