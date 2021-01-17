@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import PropTypes from 'prop-types';
-import { getPoints } from '../Utils/ApiUils';
+import {getAddress, getPoints} from '../Utils/ApiUils';
 import './Map.css';
 
 function Map (props) {
@@ -36,10 +36,11 @@ function Map (props) {
     const popup = L.popup({ closeButton: true });
     pointsLayer.addTo(map.current);
     
-    pointsLayer.eachLayer(point=> {
-      point.on('click', e => {
+    pointsLayer.eachLayer( async point=> {
+      point.on('click', async e => {
         let htmlContent;
-        htmlContent = makeMarkupOnePoint(e.latlng.lat, e.latlng.lng, e.direction);
+        const address = await getAddress(lat, lng);
+        htmlContent = makeMarkupOnePoint(e.latlng.lat, e.latlng.lng, address);
         popup.setContent(htmlContent);
         popup.setLatLng(e.latlng);
         if (!popup.isOpen()) {
@@ -89,6 +90,7 @@ const createPointsLayer = async (user, key, tableName) => {
 };
     
 function makeMarkupOnePoint(lat, lng, info = '') {
+
   return `
     <div class="widget">
     ${lat ? `
