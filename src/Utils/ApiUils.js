@@ -13,14 +13,23 @@ return axios
     });
 }
 
-export const getPoints = (user = '', apiKey = '', table = '') => {
-    const query = `https://${user}.carto.com/api/v2/sql?api_key=${apiKey}&q=SELECT latitude, longitude FROM ${table}`;
+  export const getPoints = (user = '', apiKey = '', table = '') => {
+    const query = "http://localhost:3002/api/layers/layer";
     return fetch(query)
       .then(res=> {
         const data = [];
-        res.data.rows.forEach(point=>{
-          data.push({lat: point.latitude, lng: point.longitude})
+        res.data.features.forEach(point=>{
+          data.push({lat: point.geometry.coordinates[1], lng: point.geometry.coordinates[0]})
       });
       return data;
+      });
+  };
+
+  export const getAdress = (lat, lon) => {
+    const query = 'https://nominatim.openstreetmap.org/reverse.php?lat=' + lat 
+    +'&lon=' + lon + '&zoom=18&format=jsonv2';;
+    return fetch(query)
+      .then((res)=> {
+        return res.data.display_name;
       });
   };

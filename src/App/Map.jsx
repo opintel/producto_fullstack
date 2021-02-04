@@ -4,6 +4,7 @@ import carto from '@carto/carto.js';
 import 'leaflet/dist/leaflet.css';
 import PropTypes from 'prop-types';
 import { getPoints } from '../Utils/ApiUils';
+import { getAdress } from '../Utils/ApiUils';
 import './Map.css';
 
 function Map (props) {
@@ -38,9 +39,10 @@ function Map (props) {
     pointsLayer.addTo(map.current);
     
     pointsLayer.eachLayer(point=> {
-      point.on('click', e => {
+      point.on('click', async e => {
         let htmlContent;
-        htmlContent = makeMarkupOnePoint(e.latlng.lat, e.latlng.lng, e.direction);
+        htmlContent = makeMarkupOnePoint(e.latlng.lat, e.latlng.lng
+          , await getAdress(e.latlng.lat, e.latlng.lng));
         popup.setContent(htmlContent);
         popup.setLatLng(e.latlng);
         if (!popup.isOpen()) {
@@ -89,7 +91,7 @@ const createPointsLayer = async (user, key, tableName) => {
   return L.layerGroup(pointsArray);
 };
     
-function makeMarkupOnePoint(lat, lng, info = '') {
+function makeMarkupOnePoint(lat, lng, info) {
   return `
     <div class="widget">
     ${lat ? `
