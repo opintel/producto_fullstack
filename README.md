@@ -1,13 +1,33 @@
-## Requesitos
+# 1. Diseño de la solución
+![alt text](Solucion.jpg)
+
+# 2. Servicios
+
+## Base de Datos en Docker Container -> cmontealegre/opi_test_server:v0
+## Servidor -> server (http://localhost:3002/api/layers/layer)
+## Web -> aplicación base examen (http://localhost:3000/apps/fullstack_base)
+
+# 3. Instrucciones para levantar
+
+## Requisitos
 
 * Node.js
+* Docker
 
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Instrucciones
 
-Para nstalar las dependencias:
+Abrir una terminal y ejecutar los siguientes comandos:
+
+### `docker pull cmontealegre/opi_test_server:v0`
+
+### `docker create --name OPI_test_db -p 5433:5432 -t -v pg_data:/var/lib/postgresql cmontealegre/opi_test_server:v0`
+
+### `docker start OPI_test_db`
+
+Para instalar las dependencias:
 
 ### `npm install`
 
@@ -17,11 +37,9 @@ Para correr la aplicación
 
 Puedes abrir la aplicacion entrando a [localhost:3000](http://localhost:3000) en tu explorador.
 
-Comprueba que levantaste bien la aplicación.
 
-Para esto puedes ver la aplicación de Fulstack Base en [geo.opianalytics.com](https://geo.opianalytics.com/) que debería ser igual a la que levantaste.
 
-Inicia sesión con el usuario y la contaseña que enviamos a tu correo.
+
 
 ## Documentación
 
