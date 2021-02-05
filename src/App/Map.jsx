@@ -1,6 +1,5 @@
 import React, { useRef, useEffect } from 'react';
 import * as L from 'leaflet';
-import carto from '@carto/carto.js';
 import 'leaflet/dist/leaflet.css';
 import PropTypes from 'prop-types';
 import { getPoints } from '../Utils/ApiUils';
@@ -12,44 +11,25 @@ function Map (props) {
     lng,
     zoom,
     basemapURL,
-    requestPoint,
   } = props;
 
   let username = '';
   let apiKey = '';
   let tableName = '';
+
   if (process && process.env) {
-    if(process.envREACT_APP_USERNAME) {
+    if(process.env.REACT_APP_USERNAME) {
       username = process.env.REACT_APP_USERNAME;
     }
-    if(process.REACT_APP_API_KEY) {
+    if(process.env.REACT_APP_API_KEY) {
       apiKey = process.env.REACT_APP_API_KEY;
     }
-    if(process.REACT_APP_TABLE_NAME) {
+    if(process.env.REACT_APP_TABLE_NAME) {
       tableName = process.env.REACT_APP_TABLE_NAME;
     }
   }
   
   const map = useRef({});
-
-  requestPoint.current = async () => {
-    const pointsLayer = await createPointsLayer(username, apiKey, tableName);
-    const popup = L.popup({ closeButton: true });
-    pointsLayer.addTo(map.current);
-    
-    pointsLayer.eachLayer(point=> {
-      point.on('click', e => {
-        let htmlContent;
-        htmlContent = makeMarkupOnePoint(e.latlng.lat, e.latlng.lng, e.direction);
-        popup.setContent(htmlContent);
-        popup.setLatLng(e.latlng);
-        if (!popup.isOpen()) {
-          popup.openOn(map.current);
-        }
-      });
-    });
-  };
-  
     
   useEffect(() => {
     map.current = L.map('map', {
@@ -61,27 +41,54 @@ function Map (props) {
       detectRetina: true,
       retina: '@2x',
     });
-    basemap.addTo(map.current)
+    basemap.addTo(map.current);
+
+    const requestPoints = async (event) => {
+      const {latlng} = event;
+
+      const pointsLayer = await createPointsLayer(username, apiKey, tableName, latlng);
+      const popup = L.popup({ closeButton: true });
+      pointsLayer.addTo(map.current);
+      
+      pointsLayer.eachLayer(point=> {
+        point.on('click', e => {
+
+          let htmlContent;
+          htmlContent = makeMarkupOnePoint(e.latlng.lat, e.latlng.lng, e.geocoding);
+          popup.setContent(htmlContent);
+          popup.setLatLng(e.latlng);
+          if (!popup.isOpen()) {
+            popup.openOn(map.current);
+          }
+        });
+      });
+    }
+
+    map.current.on('click', requestPoints);
 
   }, [
     lat,
     lng,
     zoom,
     basemapURL,
+    apiKey,
+    tableName,
+    username,
   ]);
   return (
     <div id="map"/>
   );
 }
-    
-const createPointsLayer = async (user, key, tableName) => {
+
+const createPointsLayer = async (user, key, tableName, geoJSON) => {
   let pointData;
-  await getPoints(user, key, tableName).then(data=>pointData = data);
+  await getPoints(user, key, tableName, geoJSON, 1000).then(data=>pointData = data);
 
   const pointsArray = [];
   pointData.forEach(p=>{
     const circleMarker = L.circleMarker(p, {
-      color: '#3388ff'
+      bubblingMouseEvents: false,
+      color: `#${p.color}`
     }).setRadius(1);
     pointsArray.push(circleMarker);
   });
@@ -104,20 +111,14 @@ function makeMarkupOnePoint(lat, lng, info = '') {
     
     
 Map.propTypes = {
-  basemapURL: PropTypes.string,
   lat: PropTypes.number.isRequired,
   lng: PropTypes.number.isRequired,
+  basemapURL: PropTypes.string,
   zoom: PropTypes.number,
-  requestPoint: PropTypes.shape({
-    current: PropTypes.func,
-  })
 };
 Map.defaultProps = {
-  zoom: 13,
   basemapURL: 'https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png',
-  requestPoint: {
-    current: () => {},
-  }
+  zoom: 13,
 }
     
 export default Map;
